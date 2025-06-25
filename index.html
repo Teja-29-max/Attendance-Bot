@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Attendance Bot</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-container">
+    <header>
+      <h1>📊 Attendance Bot</h1>
+      <p class="subtitle">Track attendance efficiently and easily.</p>
+    </header>
+
+    <main>
+      <section class="input-section">
+        <input type="text" id="nameInput" placeholder="Enter full name..." aria-label="Name" />
+        <select id="statusSelect" aria-label="Attendance Status">
+          <option value="Present">✅ Present</option>
+          <option value="Absent">❌ Absent</option>
+          <option value="Late">⏱️ Late</option>
+        </select>
+        <button id="addBtn" aria-label="Add Entry">➕ Add</button>
+      </section>
+
+      <section>
+        <h2>📝 Attendance List</h2>
+        <ul id="attendanceList" class="attendance-list"></ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>© 2025 Attendance Bot | Built by Teja</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
