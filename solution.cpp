@@ -2,8 +2,8 @@
 using namespace std;
 
 long long gcd(long long a, long long b) {
-    if (b == 0) return a;
-    return gcd(b, a % b);
+    while (b) { long long t = a % b; a = b; b = t; }
+    return a;
 }
 
 long long lcm(long long a, long long b) {
@@ -22,120 +22,95 @@ int main() {
         cin >> X >> Y >> Z >> C;
         
         if (X == Y) {
-            cout << 0 << "\n";
+            cout << "0\n";
             continue;
         }
         
-        long long min_cost = LLONG_MAX;
+        long long ans = LLONG_MAX;
         
-        // Collect important Z values to try
-        set<long long> candidates;
-        
-        // Add divisors of X and Y (limited for efficiency)
-        for (long long i = 1; i * i <= X && i <= 50000; i++) {
-            if (X % i == 0) {
-                candidates.insert(i);
-                if (i != X / i && X / i <= 50000) {
-                    candidates.insert(X / i);
-                }
-            }
-        }
-        
-        for (long long i = 1; i * i <= Y && i <= 50000; i++) {
-            if (Y % i == 0) {
-                candidates.insert(i);
-                if (i != Y / i && Y / i <= 50000) {
-                    candidates.insert(Y / i);
-                }
-            }
-        }
-        
-        // Add X, Y, gcd(X,Y) if reasonable
-        if (X <= 50000) candidates.insert(X);
-        if (Y <= 50000) candidates.insert(Y);
-        candidates.insert(gcd(X, Y));
-        
-        // Reduced range around original Z for efficiency
-        for (long long delta = -5000; delta <= 5000; delta++) {
-            long long newZ = Z + delta;
-            if (newZ >= 1) {
-                candidates.insert(newZ);
-            }
-        }
-        
-        // Add some powers of small primes (reduced range)
-        for (long long p = 1; p <= 50000; p *= 2) {
-            candidates.insert(p);
-        }
-        for (long long p = 1; p <= 50000; p *= 3) {
-            candidates.insert(p);
-        }
-        for (long long p = 1; p <= 50000; p *= 5) {
-            candidates.insert(p);
-        }
-        for (long long p = 1; p <= 50000; p *= 7) {
-            candidates.insert(p);
-        }
-        
-        // Try each candidate Z value
-        for (long long newZ : candidates) {
-            long long cost_change_Z = abs(newZ - Z);
+        // Try very limited range around Z
+        for (long long i = max(1LL, Z - 50); i <= Z + 50; i++) {
+            long long cost = abs(i - Z);
+            if (cost + C >= ans) continue;
             
-            // Early pruning: if just changing Z costs too much, skip
-            if (cost_change_Z + C >= min_cost) continue;
-            
-            // Operation 2a: X := gcd(X, newZ), Y := lcm(Y, newZ)
-            long long newX1 = gcd(X, newZ);
-            long long newY1 = lcm(Y, newZ);
-            if (newX1 == newY1) {
-                min_cost = min(min_cost, cost_change_Z + C);
-                continue; // Found solution, try next Z
+            // Try operation 2a
+            long long g1 = gcd(X, i);
+            long long l1 = lcm(Y, i);
+            if (g1 == l1) {
+                ans = min(ans, cost + C);
+                continue;
             }
             
-            // Operation 2b: X := lcm(X, newZ), Y := gcd(Y, newZ)
-            long long newX2 = lcm(X, newZ);
-            long long newY2 = gcd(Y, newZ);
-            if (newX2 == newY2) {
-                min_cost = min(min_cost, cost_change_Z + C);
-                continue; // Found solution, try next Z
+            // Try operation 2b
+            long long l2 = lcm(X, i);
+            long long g2 = gcd(Y, i);
+            if (l2 == g2) {
+                ans = min(ans, cost + C);
+                continue;
             }
             
-            // Try double operations only if single operations didn't work
-            if (cost_change_Z + 2 * C < min_cost) {
-                // Apply 2a then 2b
-                long long finalX = lcm(newX1, newZ);
-                long long finalY = gcd(newY1, newZ);
-                if (finalX == finalY) {
-                    min_cost = min(min_cost, cost_change_Z + 2 * C);
-                    continue;
+            // Try double operations only for very small costs
+            if (cost + 2 * C < ans && cost <= 10) {
+                if (lcm(g1, i) == gcd(l1, i)) ans = min(ans, cost + 2 * C);
+                if (gcd(l2, i) == lcm(g2, i)) ans = min(ans, cost + 2 * C);
+            }
+        }
+        
+        // Try small divisors
+        for (long long d = 1; d <= 100; d++) {
+            if (X % d == 0) {
+                long long cost = abs(d - Z);
+                if (cost + C < ans) {
+                    if (gcd(X, d) == lcm(Y, d)) ans = min(ans, cost + C);
+                    if (lcm(X, d) == gcd(Y, d)) ans = min(ans, cost + C);
                 }
                 
-                // Apply 2b then 2a
-                finalX = gcd(newX2, newZ);
-                finalY = lcm(newY2, newZ);
-                if (finalX == finalY) {
-                    min_cost = min(min_cost, cost_change_Z + 2 * C);
-                    continue;
+                long long big_d = X / d;
+                if (big_d != d && big_d <= 100) {
+                    cost = abs(big_d - Z);
+                    if (cost + C < ans) {
+                        if (gcd(X, big_d) == lcm(Y, big_d)) ans = min(ans, cost + C);
+                        if (lcm(X, big_d) == gcd(Y, big_d)) ans = min(ans, cost + C);
+                    }
+                }
+            }
+            
+            if (Y % d == 0) {
+                long long cost = abs(d - Z);
+                if (cost + C < ans) {
+                    if (gcd(X, d) == lcm(Y, d)) ans = min(ans, cost + C);
+                    if (lcm(X, d) == gcd(Y, d)) ans = min(ans, cost + C);
                 }
                 
-                // Apply 2a twice
-                finalX = gcd(newX1, newZ);
-                finalY = lcm(newY1, newZ);
-                if (finalX == finalY) {
-                    min_cost = min(min_cost, cost_change_Z + 2 * C);
-                    continue;
-                }
-                
-                // Apply 2b twice
-                finalX = lcm(newX2, newZ);
-                finalY = gcd(newY2, newZ);
-                if (finalX == finalY) {
-                    min_cost = min(min_cost, cost_change_Z + 2 * C);
+                long long big_d = Y / d;
+                if (big_d != d && big_d <= 100) {
+                    cost = abs(big_d - Z);
+                    if (cost + C < ans) {
+                        if (gcd(X, big_d) == lcm(Y, big_d)) ans = min(ans, cost + C);
+                        if (lcm(X, big_d) == gcd(Y, big_d)) ans = min(ans, cost + C);
+                    }
                 }
             }
         }
         
-        cout << min_cost << "\n";
+        // Try gcd(X,Y)
+        long long g = gcd(X, Y);
+        long long cost = abs(g - Z);
+        if (cost + C < ans) {
+            if (gcd(X, g) == lcm(Y, g)) ans = min(ans, cost + C);
+            if (lcm(X, g) == gcd(Y, g)) ans = min(ans, cost + C);
+        }
+        
+        // Try powers of 2
+        for (long long p = 1; p <= 64; p *= 2) {
+            cost = abs(p - Z);
+            if (cost + C < ans) {
+                if (gcd(X, p) == lcm(Y, p)) ans = min(ans, cost + C);
+                if (lcm(X, p) == gcd(Y, p)) ans = min(ans, cost + C);
+            }
+        }
+        
+        cout << ans << "\n";
     }
     
     return 0;
