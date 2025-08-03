@@ -3,6 +3,7 @@ using namespace std;
 
 const int A = 26;
 const long long INF = 4e18; // Large sentinel for 64-bit cost values
+const int INF_INT = 1e9;      // sentinel for piece counts (fits in 32-bit)
 
 struct N {
     int n[A], l, L;
@@ -76,13 +77,13 @@ int main() {
     reverse(y.begin(), y.end());
     for (char c : y) b.e(c);
 
-    vector<int> p(n + 1, (int)INF);          // min pieces
-    vector<long long> cst(n + 1, INF);       // min cost for corresponding p
-    p[0] = 0;
-    cst[0] = 0;
+    vector<int> pieces(n + 1, INF_INT);      // minimum number of substrings
+    vector<long long> cost(n + 1, INF);      // minimum cost for that # substrings
+    pieces[0] = 0;
+    cost[0] = 0;
 
     for (int i = 0; i < n; ++i) {
-        if (p[i] == (int)INF) continue;
+        if (pieces[i] == INF_INT) continue;
         for (int t = 0; t < 2; ++t) {
             const T &m = (t == 0 ? a : b);
             int u = 0;
@@ -90,20 +91,20 @@ int main() {
                 u = m.s(u, x[j]);
                 if (u == -1) break;
                 int k = j + 1;
-                int np = p[i] + 1;
-                long long nc = cst[i] + (t == 0 ? s : r);
-                if (np < p[k] || (np == p[k] && nc < cst[k])) {
-                    p[k] = np;
-                    cst[k] = nc;
+                int np = pieces[i] + 1;
+                long long nc = cost[i] + (t == 0 ? s : r);
+                if (np < pieces[k] || (np == pieces[k] && nc < cost[k])) {
+                    pieces[k] = np;
+                    cost[k] = nc;
                 }
             }
         }
     }
 
-    if (p[n] == (int)INF) {
+    if (pieces[n] == INF_INT) {
         cout << "Impossible\n";
     } else {
-        cout << cst[n] << '\n';
+        cout << cost[n] << '\n';
     }
     return 0;
 }
