@@ -1,0 +1,39 @@
+abcabc
+abc
+1 2
+
+abcdef
+abc
+1 2
+
+abcdef
+def
+1 2
+
+abc
+abc
+1 2
+
+aaa
+a
+1 2
+
+abcd
+abcd
+1 2
+
+ababab
+ab
+1 2
+
+abcdefg
+xyz
+1 2
+
+a
+a
+1 2
+
+abcabc
+cba
+1 2
